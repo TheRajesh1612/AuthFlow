@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Register</title>
+    <!-- Toastify CSS -->
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
+    />
+    <!-- Toastify JS -->
+    <script
+      type="text/javascript"
+      src="https://cdn.jsdelivr.net/npm/toastify-js"
+    ></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 font-sans">
+    <div class="max-w-md mx-auto mt-12 bg-white p-8 rounded-lg shadow-md">
+      <h2 class="text-2xl font-bold text-center mb-6">Register</h2>
+      <form
+        action="/register"
+        method="POST"
+        class="space-y-5"
+        id="registerForm"
+        autocomplete="off"
+        novalidate
+      >
+        <div>
+          <label for="name" class="block mb-1 font-medium">Username</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            placeholder="Enter username"
+            required
+            class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <label for="email" class="block mb-1 font-medium">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="Enter email"
+            required
+            pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+            class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <span id="emailError" class="text-red-500 text-xs"></span>
+        </div>
+        <div>
+          <label for="mobile" class="block mb-1 font-medium">Mobile</label>
+          <input
+            type="text"
+            id="mobile"
+            name="mobile"
+            placeholder="Enter mobile number"
+            required
+            pattern="^\d{10}$"
+            maxlength="10"
+            class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <span id="mobileError" class="text-red-500 text-xs"></span>
+        </div>
+        <div>
+          <label for="city" class="block mb-1 font-medium">City</label>
+          <input
+            type="text"
+            id="city"
+            name="city"
+            placeholder="Enter city"
+            required
+            class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <label for="password" class="block mb-1 font-medium">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Enter password"
+            required
+            minlength="8"
+            class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <span id="passwordError" class="text-red-500 text-xs"></span>
+        </div>
+        <button
+          type="submit"
+          class="w-full py-2 mt-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+        >
+          Register
+        </button>
+
+        <p class="mt-4 text-center">
+          Already have an account?
+          <a href="/login" class="text-blue-600 hover:underline">Login here</a>
+        </p>
+      </form>
+    </div>
+
+    <script>
+      document
+        .getElementById("registerForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          let valid = true;
+
+          // Email validation
+          const email = document.getElementById("email").value.trim();
+          const emailPattern =
+            /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+          if (!emailPattern.test(email)) {
+            document.getElementById("emailError").textContent =
+              "Enter a valid email address.";
+            valid = false;
+          } else {
+            document.getElementById("emailError").textContent = "";
+          }
+
+          // Mobile validation
+          const mobile = document.getElementById("mobile").value.trim();
+          const mobilePattern = /^\d{10}$/;
+          if (!mobilePattern.test(mobile)) {
+            document.getElementById("mobileError").textContent =
+              "Enter a valid 10-digit mobile number.";
+            valid = false;
+          } else {
+            document.getElementById("mobileError").textContent = "";
+          }
+
+          // Password validation
+          const password = document.getElementById("password").value;
+          const passwordPattern =
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
+          if (!passwordPattern.test(password)) {
+            document.getElementById("passwordError").textContent =
+              "Password must be at least 8 characters and include upper, lower, number, and symbol.";
+            valid = false;
+          } else {
+            document.getElementById("passwordError").textContent = "";
+          }
+
+          // Submit if valid
+          if (valid) {
+            const formData = {
+              name: document.getElementById("name").value.trim(),
+              email: email,
+              mobile: mobile,
+              city: document.getElementById("city").value.trim(),
+              password: password,
+            };
+
+            fetch("/register", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(formData),
+            })
+              .then(async (response) => {
+                // Read once
+                const raw = await response.text();
+                let data;
+                try {
+                  data = JSON.parse(raw);
+                } catch {
+                  data = raw;
+                }
+
+                const message =
+                  typeof data === "string"
+                    ? data
+                    : data && data.message
+                    ? data.message
+                    : JSON.stringify(data);
+
+                if (response.ok) {
+                  Toastify({
+                    text: "Employee registered successfully!",
+                    duration: 2500,
+                    gravity: "top",
+                    position: "center",
+                    backgroundColor: "#22c55e",
+                    stopOnFocus: true,
+                  }).showToast();
+                  document.getElementById("registerForm").reset();
+                  setTimeout(() => {
+                    window.location.href = "/login";
+                  }, 1000);
+                } else if (message && message.toLowerCase().includes("email")) {
+                  Toastify({
+                    text: message,
+                    duration: 3500,
+                    gravity: "top",
+                    position: "center",
+                    backgroundColor: "#f59e42",
+                    stopOnFocus: true,
+                  }).showToast();
+                  setTimeout(() => {
+                    window.location.href = "/register";
+                  }, 1000);
+                } else {
+                  Toastify({
+                    text: message || "Registration failed!",
+                    duration: 3500,
+                    gravity: "top",
+                    position: "center",
+                    backgroundColor: "#ef4444",
+                    stopOnFocus: true,
+                  }).showToast();
+                  throw new Error(message);
+                }
+              })
+              .catch((error) => {
+                console.error("Error submitting the form:", error);
+                Toastify({
+                  text: error.message || "There was an error. Check console.",
+                  duration: 3500,
+                  gravity: "top",
+                  position: "center",
+                  backgroundColor: "#ef4444",
+                  stopOnFocus: true,
+                }).showToast();
+              });
+          }
+        });
+    </script>
+  </body>
+</html>
